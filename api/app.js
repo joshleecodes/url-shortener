@@ -1,11 +1,19 @@
 const express = require('express');
+const cors = require('cors');
 const { argv } = require('process');
 const prompt = require('prompt');
 prompt.start();
+const testAPIRouter = require('./testAPI');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 console.log(`default endpoint: localhost:${port}`);
+
+app.use(cors());
+
+//test routing
+app.use("/testAPI", testAPIRouter);
+
 
 //in memory db
 const linkDB = [];
@@ -26,10 +34,6 @@ const generateShortLink = () => {
     return linkDB.length + 1;
 }
 
-//default endpoint
-app.get('/', (req, res) => {
-    res.send('enter generated url into browser');
-});
 
 //get longlink from shortlink
 app.get('/:shortlink', (req, res) => {
