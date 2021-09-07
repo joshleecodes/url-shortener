@@ -1,11 +1,16 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+
+//component imports
+import Header from './components/header/Header';
+import LinkInput from './components/link-input/Link-input';
+
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { apiResponse: "" }
+    this.state = { 
+      apiResponse: "" 
+    }
   }
 
   callAPI() {
@@ -17,25 +22,21 @@ export default class App extends React.Component {
   componentDidMount() {
     this.callAPI();
   }
-  
-  
+
   render(){
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p className="app-intro">
-            {this.state.apiResponse}
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <div className="app__wrapper">
+        <Header/>
+        <div className="body__wrapper">
+          <div className="body-text__wrapper">
+            <h2 className="body-text-title">URL shortener slogan</h2>
+            <p className="body-text">
+              Enter a url, click go and get a shortened url quickly and easily.
+            </p>
+          </div>
+            <LinkInput/>
+            {/* {this.state.apiResponse} */}
+        </div>
       </div>
     );
   }

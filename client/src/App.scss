@@ -1,0 +1,19 @@
+.app__wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #282c34;
+}
+
+
+
+.body__wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  color: white;
+  flex-grow: 1;
+}
+

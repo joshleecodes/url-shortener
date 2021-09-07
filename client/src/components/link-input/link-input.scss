@@ -1,0 +1,19 @@
+.link-create__wrapper, .link-copy__wrapper {
+    display: flex;
+}
+
+.link-input {
+    width: 100%;
+}
+
+.link-input-btn__wrapper {
+    background-color: gray;
+}
+
+.link-input-send, .link-input-copy {
+    height: 3vh;
+}
+
+.link-input-new, .link-input-feedback  {
+    font-size: 1rem;
+}

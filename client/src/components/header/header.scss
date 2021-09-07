@@ -1,0 +1,20 @@
+.header__wrapper {
+    display: flex;
+    justify-content: space-between;
+    padding: 2vh 2vw;
+    align-items: center;
+    color: white;
+    flex-grow: 0;
+  }
+  
+  .header-links__wrapper {
+    display: flex;
+  }
+  
+  .header-links {
+    padding: 0 2vw;
+  }
+  
+  .header-github {
+    height: 5vh;
+  }
