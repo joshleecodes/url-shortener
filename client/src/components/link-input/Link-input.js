@@ -10,20 +10,26 @@ export default class LinkInput extends React.Component {
         this.state = {
             submitted: false,
             feedback: "",
-            shortLink: "test"
+            shortLink: '',
+            longLink: ""
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNewLink = this.handleNewLink.bind(this);
         this.handleCopy = this.handleCopy.bind(this);
+        this.fetchShortLink = this.fetchShortLink.bind(this);
     }
 
-    handleSubmit() {
+    handleSubmit(e) {
+        const userLink = e.target.parentElement.previousSibling.value;
+        this.fetchShortLink(userLink);
         this.setState({ submitted: true });
+        this.setState({ feedback: "link created"})
     }
 
     handleNewLink() {
         this.setState({ submitted: false });
-        this.setState({ feedback: ""})
+        this.setState({ shortLink: ""})
+        this.setState({ feedback: ""});
     }
 
     handleCopy() {
@@ -31,23 +37,30 @@ export default class LinkInput extends React.Component {
         this.setState({ feedback: "link copied"},console.log(this.state.feedback));
     }
 
+    fetchShortLink(userLink) {
+        //fetch api
+        fetch(`http://localhost:8080/user-link/:${userLink}`)
+            .then(res => res.text())
+            .then(res => this.setState({ shortLink: res}))
+            .catch(err => err);
+    }
+
     render(){
         return(
             <div className="link-input__wrapper">
                 { this.state.submitted ? 
                     <div className="link-copy__wrapper">
-                        <input className="link-input" type="text"/>
+                        <input className="link-input" type="text" value={this.state.shortLink}/>
                         <a className="link-input-btn__wrapper" onClick={this.handleCopy}>
                             <img
                                 className="link-input-copy"
                                 src={CopyIcon}
                             />
                         </a>
-                        
                     </div>
                     :
                     <div className="link-create__wrapper">
-                        <input className="link-input" type="text"/>
+                        <input className="link-input" id="link-input" type="text" placeholder="enter url"/>
                         <a className="link-input-btn__wrapper" onClick={this.handleSubmit}>
                             <img
                                 className="link-input-send"
@@ -55,9 +68,10 @@ export default class LinkInput extends React.Component {
                             />
                         </a>
                     </div>
-                    
                 }
-                <h3 className="link-input-new" onClick={this.handleNewLink}>new link</h3>
+                { this.state.submitted && 
+                    <h3 className="link-input-new" onClick={this.handleNewLink}>new link</h3>
+                }
                 <h3 className="link-input-feedback">{this.state.feedback}</h3>
             </div>
         );
