@@ -16,12 +16,12 @@ export default class LinkInput extends React.Component {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNewLink = this.handleNewLink.bind(this);
         this.handleCopy = this.handleCopy.bind(this);
-        this.fetchShortLink = this.fetchShortLink.bind(this);
+        this.createShortLink = this.createShortLink.bind(this);
     }
 
     handleSubmit(e) {
         const userLink = e.target.parentElement.previousSibling.value;
-        this.fetchShortLink(userLink);
+        this.createShortLink(userLink);
         this.setState({ submitted: true });
         this.setState({ feedback: "link created"})
     }
@@ -37,9 +37,14 @@ export default class LinkInput extends React.Component {
         this.setState({ feedback: "link copied"},console.log(this.state.feedback));
     }
 
-    fetchShortLink(userLink) {
-        //fetch api
-        fetch(`http://localhost:8080/user-link/:${userLink}`)
+    createShortLink(userLink) {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-type': 'application/json' },
+            body: JSON.stringify({ userLink })
+        };
+
+        fetch('http://localhost:8080/create-link', requestOptions)
             .then(res => res.text())
             .then(res => this.setState({ shortLink: res}))
             .catch(err => err);
