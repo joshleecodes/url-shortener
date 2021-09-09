@@ -35,8 +35,15 @@ app.get('/:linkID', (req, res) => {
 });
 
 //generate unique code
-const generateShortLink = () => { 
-    return shortid.generate();
+const generateShortLink = () => {
+    const code = shortid.generate();
+    const codeDupilcate = true;
+    while(codeDupilcate) {
+        const codeFound = linkDB.find(linkPair => linkPair.shortLink === code); //check db for duplicate
+        if(!codeFound) code = shortid.generate(); //if exists generate another code
+        else codeDupilcate = false; //loop exit condition met
+    }
+    return code;
 }
 
 
