@@ -22,19 +22,16 @@ export default class LinkInput extends React.Component {
     handleSubmit(e) {
         const userLink = e.target.parentElement.previousSibling.value;
         this.createShortLink(userLink);
-        this.setState({ submitted: true });
-        this.setState({ feedback: "link created"})
+        this.setState({ submitted: true, feedback: "link created" });
     }
 
     handleNewLink() {
-        this.setState({ submitted: false });
-        this.setState({ shortLink: ""})
-        this.setState({ feedback: ""});
+        this.setState({ submitted: false, shortLink: "", feedback: "" });
     }
 
     handleCopy() {
         navigator.clipboard.writeText(this.state.shortLink);
-        this.setState({ feedback: "link copied"},console.log(this.state.feedback));
+        this.setState({ feedback: "link copied"});
     }
 
     createShortLink(userLink) {

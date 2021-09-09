@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const shortid = require('shortid');
 
 const app = express();
 app.use(express.json());
@@ -13,7 +14,7 @@ console.log(`default endpoint: localhost:${port}`);
 //in memory db
 const linkDB = [];
 
-//create new short link
+//handle create new short link
 app.post('/create-link', (req, res) => {
     const userLink = req.body.userLink;
     // isValidLink(userLink);
@@ -26,19 +27,16 @@ app.post('/create-link', (req, res) => {
     res.send(`${siteDomain}${genLink}`);
 });
 
-//redirect from shortlink
+//handle redirect from shortlink
 app.get('/:linkID', (req, res) => {
     const linkPair = linkDB.find(linkPair => linkPair.shortLink === req.params.linkID);
-    console.log('linkPair: ', linkPair);
-    console.log('linkID: ', req.params.linkID);
-    console.log('linkDB: ', linkDB);
     if(!linkPair) return res.status(404).send('link not found.');
     res.redirect(linkPair.longLink); 
 });
 
 //generate unique code
-const generateShortLink = () => {
-    return linkDB.length + 1;
+const generateShortLink = () => { 
+    return shortid.generate();
 }
 
 
