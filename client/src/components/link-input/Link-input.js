@@ -18,7 +18,7 @@ export default class LinkInput extends React.Component {
         this.handleCopy = this.handleCopy.bind(this);
         this.createShortLink = this.createShortLink.bind(this);
     }
-
+    
     handleSubmit(e) {
         const userLink = e.target.parentElement.previousSibling.value;
         this.createShortLink(userLink);
