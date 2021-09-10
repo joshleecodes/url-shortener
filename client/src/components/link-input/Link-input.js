@@ -11,7 +11,8 @@ export default class LinkInput extends React.Component {
             submitted: false,
             feedback: "",
             shortLink: '',
-            longLink: ""
+            longLink: "",
+            error: '',
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNewLink = this.handleNewLink.bind(this);
@@ -42,9 +43,17 @@ export default class LinkInput extends React.Component {
         };
 
         fetch('http://localhost:8080/create-link', requestOptions)
-            .then(res => res.text())
-            .then(res => this.setState({ shortLink: res}))
-            .catch(err => err);
+            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    console.log(`Error: ${res.error}`);
+                    throw res.error;
+                }
+            })
+            .then(res => this.setState({ shortLink: res.result}))
+            .catch(error => {
+                this.setState({ error })
+            });
     }
 
     render(){
@@ -52,6 +61,7 @@ export default class LinkInput extends React.Component {
             <div className="link-input__wrapper">
                 { this.state.submitted ? 
                     <div className="link-copy__wrapper">
+                        {this.state.error && <p className='link-input__error'>{this.state.error}</p>}
                         <input className="link-input" type="text" value={this.state.shortLink}/>
                         <a className="link-input-btn__wrapper" onClick={this.handleCopy}>
                             <img

@@ -1,5 +1,5 @@
 const express = require('express');
-const https = require('https')
+const fetch = require('node-fetch'); // node-fetch gives us promises where https doesn't
 const cors = require('cors');
 const shortid = require('shortid');
 
@@ -14,22 +14,6 @@ console.log(`default endpoint: localhost:${port}`);
 //in memory db
 const linkDB = [];
 
-//handle create new short link
-app.post('/create-link', (req, res) => {
-    const userLink = req.body.userLink;
-    if(isValidLink(userLink)){
-        console.log(isActiveLink(userLink)); 
-        const genLink = `${generateShortLink()}`;
-        const linkPair = {
-        longLink: userLink,
-        shortLink: genLink
-    };
-    linkDB.push(linkPair);
-    res.send(`${siteDomain}${genLink}`);
-    }
-    else res.send('not a url');
-});
-
 //handle redirect from shortlink
 app.get('/:linkID', (req, res) => {
     const linkPair = linkDB.find(linkPair => linkPair.shortLink === req.params.linkID);
@@ -41,11 +25,48 @@ app.get('/:linkID', (req, res) => {
 const generateShortLink = () => {
     let code = shortid.generate();
     const retries = 5;
-    for(let i=0; i<retries; i++) {
-        const duplicateFound = linkDB.find(linkPair => linkPair.shortLink === code); //check db for duplicate
-        if(duplicateFound) code = shortid.generate(); //if exists generate another code
-        else if (duplicateFound && i == retries-1) return "error"; //max iterations found - return error
-        else return code; //return unique code
+    
+    // loop over for n retries to generate code
+    for (let i = 0; i < retries; i++) {
+        const isDuplicateFound = linkDB.find(linkPair => linkPair.shortLink === code); //check db for duplicate
+
+        if (!isDuplicateFound) {
+            return code;
+        }
+
+        code = shortid.generate();
+    }
+
+    // if we ever end up here, its an arry
+    throw new Error('failed to generate code');
+}
+
+//handle create new link request
+app.post('/create-link', async (req, res) => {
+    const userLink = req.body.userLink;
+    
+    try {
+        validateLink(userLink);
+
+        const info = await checkIfActive(userLink);
+        const genLink = generateShortLink();
+        const linkPair = {
+            longLink: userLink,
+            shortLink: genLink
+        };
+        linkDB.push(linkPair);
+        res.status(200).json({ result: `${siteDomain}${genLink}` });
+    } catch (error) {
+        console.log('error: ', error);
+        res.status(400).json({ error })
+    }
+});
+
+const validateLink = (url) => {
+    try {
+        new URL(url);
+    } catch (error) {
+        throw 'invalid url';
     }
 }
 
@@ -60,19 +81,15 @@ const isValidLink = (url) => {
     }
 }
 
-const isActiveLink = (url) => {
-    const testURL = new URL(url);
-    try {
-        https.get(testURL, (res)
-            //check status code
-            // if 200 return true
-            // else return false
-        );
-    }
-    catch (err) {
-        feedbackMessage = "Active link check failed";
-        return feedbackMessage;
-    }   
+const checkIfActive = (url) => {
+    return fetch.get(url)
+        .then(response => {
+            if (response.ok) {
+                return true;
+            }
+
+            return false;
+        });
 }
 
 app.listen(port);
