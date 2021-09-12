@@ -1,7 +1,7 @@
 const express = require('express');
-const fetch = require('node-fetch'); // node-fetch gives us promises where https doesn't
 const cors = require('cors');
 const shortid = require('shortid');
+const axios = require('axios');
 
 const app = express();
 app.use(express.json());
@@ -20,26 +20,6 @@ app.get('/:linkID', (req, res) => {
     if(!linkPair) return res.status(404).send('link not found.');
     res.redirect(linkPair.longLink);
 });
-
-//generate unique code
-const generateShortLink = () => {
-    let code = shortid.generate();
-    const retries = 5;
-    
-    // loop over for n retries to generate code
-    for (let i = 0; i < retries; i++) {
-        const isDuplicateFound = linkDB.find(linkPair => linkPair.shortLink === code); //check db for duplicate
-
-        if (!isDuplicateFound) {
-            return code;
-        }
-
-        code = shortid.generate();
-    }
-
-    // if we ever end up here, its an arry
-    throw new Error('failed to generate code');
-}
 
 //handle create new link request
 app.post('/create-link', async (req, res) => {
@@ -62,6 +42,24 @@ app.post('/create-link', async (req, res) => {
     }
 });
 
+//generate unique code
+const generateShortLink = () => {
+    let code = shortid.generate();
+    const retries = 5;
+    
+    // loop over for n retries to generate code
+    for (let i = 0; i < retries; i++) {
+        const isDuplicateFound = linkDB.find(linkPair => linkPair.shortLink === code); //check db for duplicate
+        if (!isDuplicateFound) {
+            return code;
+        }
+        code = shortid.generate();
+    }
+
+    // if we ever end up here, its an arry
+    throw new Error('failed to generate code');
+}
+
 const validateLink = (url) => {
     try {
         new URL(url);
@@ -70,24 +68,12 @@ const validateLink = (url) => {
     }
 }
 
-//urlValidation
-const isValidLink = (url) => {
-    try {
-        new URL(url);
-        return true;
-    } catch (err) {
-        console.log('invalid url provided');
-        return false;
-    }
-}
-
 const checkIfActive = (url) => {
-    return fetch.get(url)
+    return axios.get(url)
         .then(response => {
             if (response.ok) {
                 return true;
             }
-
             return false;
         });
 }

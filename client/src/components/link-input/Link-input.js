@@ -34,7 +34,7 @@ export default class LinkInput extends React.Component {
         navigator.clipboard.writeText(this.state.shortLink);
         this.setState({ feedback: "link copied"});
     }
-
+    
     createShortLink(userLink) {
         const requestOptions = {
             method: 'POST',
@@ -43,14 +43,13 @@ export default class LinkInput extends React.Component {
         };
 
         fetch('http://localhost:8080/create-link', requestOptions)
-            .then(res => res.json())
             .then(res => {
                 if (!res.ok) {
-                    console.log(`Error: ${res.error}`);
-                    throw res.error;
+                return res.json().then( () => {throw res.error})
                 }
+                return res.json();
             })
-            .then(res => this.setState({ shortLink: res.result}))
+            .then(res => this.setState({ shortLink: res.result }))
             .catch(error => {
                 this.setState({ error })
             });
