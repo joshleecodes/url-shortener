@@ -27,18 +27,18 @@ app.post('/create-link', async (req, res) => {
     
     try {
         validateLink(userLink);
-
-        const info = await checkIfActive(userLink);
+        const feedback = await checkIfActive(userLink);
+        console.log(feedback);
         const genLink = generateShortLink();
         const linkPair = {
             longLink: userLink,
             shortLink: genLink
         };
         linkDB.push(linkPair);
-        res.status(200).json({ result: `${siteDomain}${genLink}` });
+        res.status(200).json({ result: `${siteDomain}${genLink}`, feedback });
     } catch (error) {
         console.log('error: ', error);
-        res.status(400).json({ error })
+        res.status(400).json({ error });
     }
 });
 
@@ -56,7 +56,6 @@ const generateShortLink = () => {
         code = shortid.generate();
     }
 
-    // if we ever end up here, its an arry
     throw new Error('failed to generate code');
 }
 
@@ -70,11 +69,11 @@ const validateLink = (url) => {
 
 const checkIfActive = (url) => {
     return axios.get(url)
-        .then(response => {
-            if (response.ok) {
-                return true;
-            }
-            return false;
+        .then( () => {
+            return "link created";
+        })
+        .catch( () => {
+            return "Warning: link could be inactive";
         });
 }
 

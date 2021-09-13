@@ -12,7 +12,7 @@ export default class LinkInput extends React.Component {
             feedback: "",
             shortLink: '',
             longLink: "",
-            error: '',
+            error: ''
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNewLink = this.handleNewLink.bind(this);
@@ -22,8 +22,8 @@ export default class LinkInput extends React.Component {
     
     handleSubmit(e) {
         const userLink = e.target.parentElement.previousSibling.value;
+        this.setState({ submitted: true });
         this.createShortLink(userLink);
-        this.setState({ submitted: true, feedback: "link created" });
     }
 
     handleNewLink() {
@@ -43,15 +43,15 @@ export default class LinkInput extends React.Component {
         };
 
         fetch('http://localhost:8080/create-link', requestOptions)
-            .then(res => {
-                if (!res.ok) {
-                return res.json().then( () => {throw res.error})
-                }
-                return res.json();
-            })
-            .then(res => this.setState({ shortLink: res.result }))
+            .then(res => res.json())
+            .then(res => {   
+                    if(res.error){
+                        return this.setState({ error: res.error });
+                    }
+                    return this.setState({ shortLink: res.result, feedback: res.feedback })
+                })
             .catch(error => {
-                this.setState({ error })
+                console.log(error);
             });
     }
 

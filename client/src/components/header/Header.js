@@ -19,7 +19,6 @@ function Header() {
             <h1 className="header-title">URL Shortener</h1>
             </div>
             <div className="header-links__wrapper">
-            <h1 className="header-links">Active Links</h1>
             <a href="https://github.com/joshleecodes/url-shortener" target="_blank">
                 <img 
                 className="header-github"
