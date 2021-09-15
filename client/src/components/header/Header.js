@@ -16,9 +16,8 @@ function Header() {
     return (
         <header className="header__wrapper">
             <div className="header-title__wrapper">
-            <h1 className="header-title">URL Shortener</h1>
+            <h1 className="header-title">S</h1>
             </div>
-            <div className="header-links__wrapper">
             <a href="https://github.com/joshleecodes/url-shortener" target="_blank">
                 <img 
                 className="header-github"
@@ -27,7 +26,6 @@ function Header() {
                 onMouseLeave={handleMouseLeave}
                 />              
             </a>
-            </div>
         </header>
     )
 }

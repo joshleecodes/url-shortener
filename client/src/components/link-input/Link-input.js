@@ -10,9 +10,8 @@ export default class LinkInput extends React.Component {
         this.state = {
             submitted: false,
             feedback: "",
-            shortLink: '',
-            longLink: "",
-            error: ''
+            shortLink: "",
+            longLink: ""
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleNewLink = this.handleNewLink.bind(this);
@@ -46,7 +45,7 @@ export default class LinkInput extends React.Component {
             .then(res => res.json())
             .then(res => {   
                     if(res.error){
-                        return this.setState({ error: res.error });
+                        return this.setState({ shortLink: res.error });
                     }
                     return this.setState({ shortLink: res.result, feedback: res.feedback })
                 })
@@ -58,31 +57,23 @@ export default class LinkInput extends React.Component {
     render(){
         return(
             <div className="link-input__wrapper">
-                { this.state.submitted ? 
-                    <div className="link-copy__wrapper">
-                        {this.state.error && <p className='link-input__error'>{this.state.error}</p>}
-                        <input className="link-input" type="text" value={this.state.shortLink}/>
-                        <a className="link-input-btn__wrapper" onClick={this.handleCopy}>
-                            <img
-                                className="link-input-copy"
-                                src={CopyIcon}
-                            />
-                        </a>
-                    </div>
-                    :
-                    <div className="link-create__wrapper">
-                        <input className="link-input" id="link-input" type="text" placeholder="enter url"/>
-                        <a className="link-input-btn__wrapper" onClick={this.handleSubmit}>
-                            <img
-                                className="link-input-send"
-                                src={SendIcon}
-                            />
-                        </a>
-                    </div>
-                }
-                { this.state.submitted && 
-                    <h3 className="link-input-new" onClick={this.handleNewLink}>new link</h3>
-                }
+                <div className="link-input">
+                    { this.state.submitted ? 
+                        <div className="link-copy__wrapper">
+                            <input className="link-input" type="text" value={this.state.shortLink} onChange={this.handleNewLink}/>
+                            <a className="link-input-btn__wrapper" onClick={this.handleCopy}>
+                                <p className="link-input-copy">Copy</p>
+                            </a>
+                        </div>
+                        :
+                        <div className="link-create__wrapper">
+                            <input className="link-input" id="link-input" type="text" placeholder="Clunky link goes here!"/>
+                            <a className="link-input-btn__wrapper" onClick={this.handleSubmit}>
+                                <p className="link-input-send">Shorten</p>
+                            </a>
+                        </div>
+                    }
+                </div>
                 <h3 className="link-input-feedback">{this.state.feedback}</h3>
             </div>
         );

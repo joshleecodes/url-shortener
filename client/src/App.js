@@ -18,12 +18,13 @@ export default class App extends React.Component {
         <Header/>
         <div className="body__wrapper">
           <div className="body-text__wrapper">
-            <h2 className="body-text-title">URL shortener slogan</h2>
+            <h2 className="body-text-title">Say goodbye to long, clunky links; </h2>
             <p className="body-text">
-              Enter a url, click go and get a shortened url quickly and easily.
+            Quick, easy and hassle free.
             </p>
-          </div>
             <LinkInput/>
+          </div>
+          
         </div>
       </div>
     );
