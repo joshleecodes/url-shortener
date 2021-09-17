@@ -21,6 +21,7 @@ input {
 
 input:focus {
     border-radius: 5px 0px 0px 5px;
+    outline: none;
 }
 
 .link-create__wrapper, .link-copy__wrapper {
