@@ -9,7 +9,6 @@ const con = mysql.createConnection({
     user: 'root',
     password: 'password'
 });
-
 con.connect((err) => {
     if(err){
       console.log('Error connecting to Db');
@@ -18,6 +17,8 @@ con.connect((err) => {
     }
     console.log('Connection established');
 });
+con.query('USE urlshortener');
+
 
 const app = express();
 app.use(express.json());
@@ -27,14 +28,21 @@ const port = process.env.PORT || 8080;
 const siteDomain = 'localhost:8080/'
 console.log(`default endpoint: localhost:${port}`);
 
-//in memory db
-const linkDB = [];
 
 //handle redirect from shortlink
-app.get('/:linkID', (req, res) => {
-    const linkPair = linkDB.find(linkPair => linkPair.shortLink === req.params.linkID);
-    if(!linkPair) return res.status(404).send('link not found.');
-    res.redirect(linkPair.longLink);
+app.get('/:linkID', async (req, res) => {
+
+    //query for shortlink match, returning shortlink
+    await con.query('SELECT long_link FROM links WHERE short_link = ?', req.params.linkID,  (err, rows) => {
+        //check if link exists before redirect
+        try {
+            if(rows[0].hasOwnProperty('long_link')){
+                res.redirect(rows[0].long_link);
+            }
+        } catch (error) {
+            return res.status(404).send('link not found.')
+        }
+    });
 });
 
 //handle create new link request
@@ -46,11 +54,13 @@ app.post('/create-link', async (req, res) => {
         const feedback = await checkIfActive(userLink);
         console.log(feedback);
         const genLink = generateShortLink();
-        const linkPair = {
-            longLink: userLink,
-            shortLink: genLink
+        const values = {
+            short_link: genLink,
+            long_link: userLink
         };
-        linkDB.push(linkPair);
+        con.query('INSERT INTO links SET ?', values, (err,res) => {
+            if(err) throw err;
+        });
         res.status(200).json({ result: `${siteDomain}${genLink}`, feedback });
     } catch (error) {
         console.log('error: ', error);
@@ -62,10 +72,20 @@ app.post('/create-link', async (req, res) => {
 const generateShortLink = () => {
     let code = shortid.generate();
     const retries = 5;
-    
+    let shortLinks = [];
+
+    //query for all shortlinks in DB and store in array
+    con.query('SELECT short_link FROM links', (err, rows) => {
+        if(err) throw err;
+
+        rows.forEach((row) => {
+            shortLinks.push(row.short_link);
+        })
+    });
+
     // loop over for n retries to generate code
     for (let i = 0; i < retries; i++) {
-        const isDuplicateFound = linkDB.find(linkPair => linkPair.shortLink === code); //check db for duplicate
+        const isDuplicateFound = shortLinks.find(link => link === code); //check db for duplicate
         if (!isDuplicateFound) {
             return code;
         }
