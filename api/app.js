@@ -2,6 +2,22 @@ const express = require('express');
 const cors = require('cors');
 const shortid = require('shortid');
 const axios = require('axios');
+const mysql = require('mysql');
+
+const con = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'password'
+});
+
+con.connect((err) => {
+    if(err){
+      console.log('Error connecting to Db');
+      console.log(err);
+      return;
+    }
+    console.log('Connection established');
+});
 
 const app = express();
 app.use(express.json());
