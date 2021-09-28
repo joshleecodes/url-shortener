@@ -15,7 +15,7 @@ con.connect((err) => {
       console.log(err);
       return;
     }
-    console.log('Connection established');
+    console.log('DB Connection established');
 });
 con.query('USE urlshortener');
 
@@ -31,15 +31,17 @@ console.log(`default endpoint: localhost:${port}`);
 
 //handle redirect from shortlink
 app.get('/:linkID', async (req, res) => {
-
+    let url = escape(req.params.linkID);
     //query for shortlink match, returning shortlink
-    await con.query('SELECT long_link FROM links WHERE short_link = ?', req.params.linkID,  (err, rows) => {
+    await con.query('SELECT long_link FROM links WHERE short_link = ?', url, (err, rows) => {
         //check if link exists before redirect
         try {
             if(rows[0].hasOwnProperty('long_link')){
-                res.redirect(rows[0].long_link);
+                url = unescape(rows[0].long_link)
+                res.redirect(url);
             }
         } catch (error) {
+            console.log(error);
             return res.status(404).send('link not found.')
         }
     });
@@ -55,10 +57,12 @@ app.post('/create-link', async (req, res) => {
         console.log(feedback);
         const genLink = generateShortLink();
         const values = {
-            short_link: genLink,
-            long_link: userLink
+            short_link: escape(genLink),
+            long_link: escape(userLink)
         };
-        con.query('INSERT INTO links SET ?', values, (err,res) => {
+        const sql = 'INSERT INTO links SET ?';
+
+        con.query(sql, values, (err,res) => {
             if(err) throw err;
         });
         res.status(200).json({ result: `${siteDomain}${genLink}`, feedback });
