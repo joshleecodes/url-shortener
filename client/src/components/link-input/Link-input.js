@@ -1,15 +1,12 @@
 import React from 'react';
 
-//asset imports
-import SendIcon from '../../assets/imgs/send.svg';
-import CopyIcon from '../../assets/imgs/copy.svg';
-
 export default class LinkInput extends React.Component {
     constructor(props){
         super(props);
         this.state = {
             submitted: false,
             feedback: "",
+            userLink: "",
             shortLink: "",
             longLink: ""
         };
@@ -18,11 +15,15 @@ export default class LinkInput extends React.Component {
         this.handleCopy = this.handleCopy.bind(this);
         this.createShortLink = this.createShortLink.bind(this);
     }
+
+    resetInput(){
+        this.setState({userLink: ""});
+    }
     
-    handleSubmit(e) {
-        const userLink = e.target.parentElement.previousSibling.value;
+    handleSubmit() {
         this.setState({ submitted: true });
-        this.createShortLink(userLink);
+        this.resetInput();
+        this.createShortLink(this.state.userLink);
     }
 
     handleNewLink() {
@@ -67,7 +68,7 @@ export default class LinkInput extends React.Component {
                         </div>
                         :
                         <div className="link-create__wrapper">
-                            <input className="link-input" id="link-input" type="text" placeholder="Clunky link goes here!"/>
+                            <input required className="link-input" id="link-input" type="text" placeholder="Clunky link goes here!" value={this.state.userLink} onChange={(e) => {console.log(e.target.value); this.setState({userLink: e.target.value});}}/>
                             <a className="link-input-btn__wrapper" onClick={this.handleSubmit}>
                                 <p className="link-input-send">Shorten</p>
                             </a>
