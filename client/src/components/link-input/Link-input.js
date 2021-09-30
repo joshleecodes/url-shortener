@@ -67,12 +67,12 @@ export default class LinkInput extends React.Component {
                             </a>
                         </div>
                         :
-                        <div className="link-create__wrapper">
+                        <form className="link-create__wrapper" onSubmit={this.handleSubmit}>
                             <input required className="link-input" id="link-input" type="text" placeholder="Clunky link goes here!" value={this.state.userLink} onChange={(e) => {console.log(e.target.value); this.setState({userLink: e.target.value});}}/>
-                            <a className="link-input-btn__wrapper" onClick={this.handleSubmit}>
+                            <button className="link-input-btn__wrapper" type="submit">
                                 <p className="link-input-send">Shorten</p>
-                            </a>
-                        </div>
+                            </button>
+                        </form>
                     }
                 </div>
                 <h3 className="link-input-feedback">{this.state.feedback}</h3>

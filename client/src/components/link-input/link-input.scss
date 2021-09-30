@@ -37,11 +37,12 @@ input:focus {
     border: 2px solid #282c34;
     height: inherit;
     width: 5vw;
-    padding: 0 0.5vw;
+    
     border-radius: 0px 5px 5px 0px;
     font-size: 1.1rem;
     font-weight: 600 ;
     cursor: pointer;
+    color: white;
 }
 
 .link-input-btn__wrapper:hover {
