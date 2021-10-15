@@ -4,11 +4,27 @@ const shortid = require('shortid');
 const axios = require('axios');
 const mysql = require('mysql');
 
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+//api domain/port definitions
+const port = process.env.PORT || 8080;
+const siteDomain = 'localhost:8080/'
+console.log(`default endpoint: localhost:${port}`);
+
+
+
+///////////////////// DB Setup
+
+//defining BD connection
 const con = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'password'
 });
+
+//initiating DB connection with feedback
 con.connect((err) => {
     if(err){
       console.log('Error connecting to Db');
@@ -20,26 +36,49 @@ con.connect((err) => {
 con.query('USE urlshortener');
 
 
-const app = express();
-app.use(express.json());
-app.use(cors());
 
-const port = process.env.PORT || 8080;
-const siteDomain = 'localhost:8080/'
-console.log(`default endpoint: localhost:${port}`);
+///////////////////// API Request Handling
 
+//handle create new link request
+app.post('/create-link', async (req, res) => {
+    const userLink = req.body.userLink;
+    
+    try {
+        //user link validation
+        validateLink(userLink);
+        const feedback = await checkIfActive(userLink);
+        
+        const genLink = generateShortLink(); //create unique shortlink
+        
+        //DB query to create new entry,
+        const sql = 'INSERT INTO links SET ?';
+        let values = createURLPair(genLink, userLink);
+        con.query(sql, values, (err) => {
+            if(err) throw err;
+        });
+        res.status(200).json({ result: `${siteDomain}${genLink}`, feedback }); //response to client
+
+    } catch (error) {
+        console.log('error: ', error); //api error log
+        res.status(400).json({ error }); //error response to client
+    }
+});
 
 //handle redirect from shortlink
 app.get('/:linkID', async (req, res) => {
-    let url = escape(req.params.linkID);
+
+    //DB query to retieve corresponding longlink
+    const sql = 'SELECT long_link FROM links WHERE short_link = ?';
+    let url = escapeParam(req.params.linkID);
+
     //query for shortlink match, returning shortlink
-    await con.query('SELECT long_link FROM links WHERE short_link = ?', url, (err, rows) => {
-        //check if link exists before redirect
+   con.query(sql, url, (err, rows) => {
         try {
-            if(rows[0].hasOwnProperty('long_link')){
-                url = unescape(rows[0].long_link)
+            if(rows[0].hasOwnProperty('long_link')){ //check db response includes full link pair
+                url = unescapeParam(rows[0].long_link)
                 res.redirect(url);
             }
+
         } catch (error) {
             console.log(error);
             return res.status(404).send('link not found.')
@@ -47,41 +86,19 @@ app.get('/:linkID', async (req, res) => {
     });
 });
 
-//handle create new link request
-app.post('/create-link', async (req, res) => {
-    const userLink = req.body.userLink;
-    
-    try {
-        validateLink(userLink);
-        const feedback = await checkIfActive(userLink);
-        console.log(feedback);
-        const genLink = generateShortLink();
-        const values = {
-            short_link: escape(genLink),
-            long_link: escape(userLink)
-        };
-        const sql = 'INSERT INTO links SET ?';
 
-        con.query(sql, values, (err,res) => {
-            if(err) throw err;
-        });
-        res.status(200).json({ result: `${siteDomain}${genLink}`, feedback });
-    } catch (error) {
-        console.log('error: ', error);
-        res.status(400).json({ error });
-    }
-});
 
-//generate unique code
+///////////////////// API Assist functions
+
+//generate unique shortlink
 const generateShortLink = () => {
-    let code = shortid.generate();
-    const retries = 5;
-    let shortLinks = [];
+    let code = shortid.generate(); //initial code generation
+    const retries = 5;  //retry limit
 
     //query for all shortlinks in DB and store in array
+    let shortLinks = [];
     con.query('SELECT short_link FROM links', (err, rows) => {
         if(err) throw err;
-
         rows.forEach((row) => {
             shortLinks.push(row.short_link);
         })
@@ -95,10 +112,22 @@ const generateShortLink = () => {
         }
         code = shortid.generate();
     }
-
     throw new Error('failed to generate code');
 }
 
+//create url pair from user provided link(longlink) and generated code link(shortlink)
+const createURLPair = (genLink, userLink) => {
+    return {
+        short_link: escapeParam(genLink),
+        long_link: escapeParam(userLink)
+    };
+}
+
+
+
+///////////////////// API URL Validation
+
+//checks user provided link is valid via node.js URL object creation
 const validateLink = (url) => {
     try {
         new URL(url);
@@ -107,6 +136,7 @@ const validateLink = (url) => {
     }
 }
 
+//checks user provided link is active by making get request to see if a response is recieved
 const checkIfActive = (url) => {
     return axios.get(url)
         .then( () => {
@@ -115,6 +145,20 @@ const checkIfActive = (url) => {
         .catch( () => {
             return "Warning: link could be inactive";
         });
+}
+
+
+
+///////////////////// API UTIL
+
+//recieves a parameter string and returns an escaped string
+const escapeParam = (param) => {
+    return escape(param);
+}
+
+//recieves escaped string and returns the original/unescaped string
+const unescapeParam = (param) => {
+    return unescape(param);
 }
 
 app.listen(port);
