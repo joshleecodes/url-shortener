@@ -9,9 +9,9 @@ describe("createURLPair", () => {
     });
   });
   it("should fail to create linkedPair object", () => {
-    expect(util.createURLPair(null, null)).toEqual(null);
-    expect(util.createURLPair("ABCD", null)).toEqual(null);
-    expect(util.createURLPair(null, "longlink.com")).toEqual(null);
+    expect(util.createURLPair(null, null)).toBeNull();
+    expect(util.createURLPair("ABCD", null)).toBeNull();
+    expect(util.createURLPair(null, "longlink.com")).toBeNull();
   })
 });
 

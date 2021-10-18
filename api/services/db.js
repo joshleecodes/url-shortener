@@ -3,13 +3,11 @@ const mysql = require("mysql");
 
 let isConnected = false;
 
-
 const con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "password",
 });
-
 
 const init = () => {
   con.connect((err) => {

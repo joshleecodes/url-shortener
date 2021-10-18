@@ -5,27 +5,41 @@ const db = require("../services/db");
 
 const siteDomain = "localhost:8080/";
 
-const generateShortLink = () => {
-  let code = shortid.generate();
-  const retries = 5;
-  let shortLinks = [];
 
-  db.getConnection().query("SELECT short_link FROM links", (err, rows) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).send("Server Error: Bad Query");
-    }
-    rows.forEach((row) => {
-      shortLinks.push(row.short_link);
+const isUniqueCode = (code) => {
+  return new Promise((resolve, reject) => {
+    const sql = "SELECT short_link FROM links WHERE short_link = ?";
+
+    db.getConnection().query(sql, code, (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      }
+
+      if (!rows.length) {
+        resolve(true);
+      }
+
+      resolve(false);
     });
   });
+};
+
+const generateShortLink = async () => {
+  let code = shortid.generate();
+  const retries = 5;
+  
+  const isUnique = await isUniqueCode(code);
+  if (isUnique) {
+    return code;
+  }
 
   for (let i = 0; i < retries; i++) {
-    const isDuplicateFound = shortLinks.find((link) => link === code);
-    if (!isDuplicateFound) {
+    code = shortid.generate();
+    const isUnique = await isUniqueCode(code);
+    if (isUnique) {
       return code;
     }
-    code = shortid.generate();
   }
   throw "failed to generate code";
 };
@@ -37,7 +51,7 @@ const createLinkController = async (req, res) => {
     util.validateLink(userLink);
     const feedback = await util.checkIfActive(userLink);
 
-    const genLink = generateShortLink();
+    const genLink = await generateShortLink();
 
     const sql = "INSERT INTO links SET ?";
     let values = util.createURLPair(genLink, userLink);
